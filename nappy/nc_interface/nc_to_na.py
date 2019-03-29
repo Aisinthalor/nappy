@@ -99,7 +99,7 @@ class NCToNA(nappy.nc_interface.cdms_to_na.CDMSToNA):
         cdms_variables = []
 
         # Make sure var_ids is a list
-        if type(var_ids) == type("string"):
+        if isinstance(var_ids, type("string")):
             var_ids = [var_ids]
 
         for var_id in fin.listvariables():
@@ -115,7 +115,7 @@ class NCToNA(nappy.nc_interface.cdms_to_na.CDMSToNA):
 
                     cdms_variables.append(var)
 
-        globals = fin.attributes.items()
+        globals = list(fin.attributes.items())
         return (cdms_variables, globals) 
 
     def constructNAFileNames(self, na_file=None):
@@ -177,7 +177,7 @@ class NCToNA(nappy.nc_interface.cdms_to_na.CDMSToNA):
 
         # define final override list by using defaults then locally provided changes
         overriders = local_na_atts
-        for (okey, ovalue) in self.na_items_to_override.items():
+        for (okey, ovalue) in list(self.na_items_to_override.items()):
             overriders[okey] = ovalue
 
         # Now loop through writing the outputs
@@ -191,7 +191,7 @@ class NCToNA(nappy.nc_interface.cdms_to_na.CDMSToNA):
             (this_na_dict, vars_to_write) = na_dict_and_var_ids
 
             # Override content of NASA Ames if they are permitted
-            for key in overriders.keys():
+            for key in list(overriders.keys()):
 
                 if key in permitted_overwrite_metadata:    
                     if key in items_as_lists:
@@ -217,14 +217,14 @@ class NCToNA(nappy.nc_interface.cdms_to_na.CDMSToNA):
                         this_na_dict[key] = comments_list
                         this_na_dict["N%sL" % key] = len(comments_list)
 		    	 
-                    elif not this_na_dict.has_key(key) or new_item != this_na_dict[key]:
+                    elif key not in this_na_dict or new_item != this_na_dict[key]:
                         this_na_dict[key] = new_item
                         msg = "Metadata overwritten in output file: '%s' is now '%s'" % (key, this_na_dict[key])
                         if DEBUG: log.debug(msg)
                         self.output_message.append(msg)
 
             # For certain FFIs create final Normal comments as a list of column headers before data section 
-            if add_column_headers:
+            if add_column_headers == True:
                 self._updateWithColumnHeaders(this_na_dict, delimiter)
         
             # Cope with size limits if specified and FFI is 1001
@@ -398,7 +398,7 @@ class NCToNA(nappy.nc_interface.cdms_to_na.CDMSToNA):
             end_used = end_line
 
         # Check for alternative last line in NCOM
-        if not end_used and key == "NCOM":
+        if end_used == False and key == "NCOM":
             end_line2 = hp["data_next"]
             if existing_comments[-1] == end_line2:
                 existing_comments = existing_comments[:-1]

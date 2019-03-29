@@ -80,7 +80,7 @@ class CDMSToNA:
         Otherwise variables must be auxiliary variables within that structure (i.e. only
         defined once per the least changing dimension.
         """
-        if self.converted:
+        if self.converted == True:
             return self.na_dict_list
         
         # Convert any singleton variables to CDMS variables
@@ -96,7 +96,7 @@ class CDMSToNA:
         collector.collectNAContent()
 
         # Return if no files returned
-        if not collector.found_na:
+        if collector.found_na == False:
             msg = "\nNo files created after variables parsed."
             if DEBUG: log.debug(msg)
             self.output_message.append(msg)
@@ -119,7 +119,7 @@ class CDMSToNA:
             self.output_message += collector.output_message
 
             # Append to list if more variables were captured
-            if collector.found_na:
+            if collector.found_na == True:  
                 na_dict_list.append((collector.na_dict, collector.var_ids))
 
         self.na_dict_list = na_dict_list
@@ -158,7 +158,7 @@ class CDMSToNA:
         """
         # Set up a long list (longer than number of vars)
         if len(variables) > var_limit:
-            raise Exception("Can only handle converting less than " + `var_limit` + " variables in any batch.")
+            raise Exception("Can only handle converting less than " + repr(var_limit) + " variables in any batch.")
 
         # Collect up those that are ordered and unordered
         ordered_vars = [None] * var_limit
@@ -177,7 +177,7 @@ class CDMSToNA:
         # Clear any None values in ordered_vars and place in final vars list
         for var in ordered_vars + unordered_vars:
             # Test for Real var types
-            if type(var) != type(None): 
+            if not isinstance(var, type(None)): 
                 vars.append(var)
 	     
         return vars

@@ -30,7 +30,7 @@ def scanFAAM(fileName=None, vars=None, nth=4, missingValuesToUse=(-9999., -32767
     file and gets the first and last index of the first (time) dimension
     that holds real (non-missing) values.
     """
-    if type(missingValuesToUse)!=type((1,2)):
+    if not isinstance(missingValuesToUse, type((1, 2))):
         missingValuesToUse=(missingValuesToUse,)
     startList=[]
     endList=[]
@@ -38,14 +38,14 @@ def scanFAAM(fileName=None, vars=None, nth=4, missingValuesToUse=(-9999., -32767
     end=None
 
     if not fileName and not vars:
-        raise "You must provide either a file name or a list of cdms variables."
+        raise TypeError("You must provide either a file name or a list of cdms variables.")
     
     if fileName:
         f=cdms.open(fileName)
         vars=f.listvariables()
 
     for var in vars:
-        if type(var)!=type(""):
+        if not isinstance(var, type("")):
             id=var.id
         else:
             id=var
@@ -53,7 +53,7 @@ def scanFAAM(fileName=None, vars=None, nth=4, missingValuesToUse=(-9999., -32767
         if id[-4:]=="FLAG" or id=="Time":
             continue
 
-        if type(var)==type(""):
+        if isinstance(var, type("")):
             var=f(var)
 
         step=1000
@@ -63,7 +63,7 @@ def scanFAAM(fileName=None, vars=None, nth=4, missingValuesToUse=(-9999., -32767
 
         startList.append(start)
         endList.append(end)
-        print "Start/End index: %s %s:%s" % (id, start, end)
+        print(("Start/End index: %s %s:%s" % (id, start, end)))
   
     startMin=min(startList)
     endMax=max(endList)
@@ -81,7 +81,7 @@ def findMissing(var, step, missingValuesToUse):
     sh=var.shape
     iend=sh[0]-1
 
-    print var.id, step
+    print((var.id, step))
     for miss in missingValuesToUse:
         for i in range(i0, iend, step):
             if var[i][0]==miss:
@@ -102,7 +102,7 @@ if __name__=="__main__":
     fileName=None
     missingValue=None
 
-    for arg,value in args[0]:
+    for arg, value in args[0]:
         if arg=="-f":
             fileName=value
         elif arg=="-m":

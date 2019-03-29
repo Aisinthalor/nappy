@@ -14,8 +14,8 @@ Functions and classes commonly used in nappy.
 import logging
 
 # Imports from local package
-import parse_config
-import text_parser as text_parser
+from . import parse_config
+from . import text_parser as text_parser
 
 logging.basicConfig()
 log = logging.getLogger(__name__)
@@ -25,25 +25,22 @@ def getNAFileClass(ffi):
     """
     Returns class for an FFI.
     """
-    mod = "nappy.na_file.na_file_" + `ffi`
-    cls = "NAFile" + `ffi`
-    exec "import %s" % mod
+    mod = "nappy.na_file.na_file_" + repr(ffi)
+    cls = "NAFile" + repr(ffi)
+    exec("import %s" % mod)
     return eval("%s.%s" % (mod, cls))
    
 
-def readFFI(filename, ignore_header_lines):
+def readFFI(filename):
     """
     Function to read the top line of a NASA Ames file to extract
     the File Format Index (FFI) and return it as an integer.
     """
-    with open(filename) as fin:
-        for i in range(ignore_header_lines):
-            fin.readline()
-        topline = fin.readline()
-        nextline = fin.readline()
+    fin = open(filename)
+    topline = fin.readline()
+    fin.close()
 
     ffi = text_parser.readItemsFromLine(topline, 2, int)[-1]
-
     return ffi
 
 
@@ -64,13 +61,13 @@ def chooseFFI(na_dict):
         return 3010
 
     elif d["NIV"] == 2:    # 2 independent variables
-        if type(d["X"][0][0]) == type("string"):
+        if isinstance(d["X"][0][0], type("string")):
             # 2160 - the  independent unbounded variable is a character string
             return 2160
-        elif type(d["X"][0][1]) == type([1,2]) and len(d["X"][0][1]) > 1:
+        elif isinstance(d["X"][0][1], type([1, 2])) and len(d["X"][0][1]) > 1:
             # 2110 - one independent variable changes length and the values are specified
             return 2110
-        elif type(d["X"][0][1]) == type([1,2]) and len(d["X"][0][1]) == 1:
+        elif isinstance(d["X"][0][1], type([1, 2])) and len(d["X"][0][1]) == 1:
             # 2310 - one indepenent variable changes length but only the first value is specifically stated
             return 2310
         else:            
@@ -78,10 +75,10 @@ def chooseFFI(na_dict):
             return 2010
 
     elif d["NIV"] == 1:   # 1 independent variable 
-        if not d.has_key("NAUXV"):
+        if "NAUXV" not in d:
             # 1001 - No auxiliary variables
             return 1001
-        elif d.has_key("NVPM"):
+        elif "NVPM" in d:
             # 1020 - Implied values for independent variable
             return 1020
         else:
@@ -111,7 +108,7 @@ def modifyNADictCopy(indict, v_new, start, end, ivol, nvol):
     Returns a copy of a dictionary with some modifications.
     """
     newDict = {}
-    for key,value in indict.items(): 
+    for key, value in list(indict.items()): 
         if key == "X":
             newlist = indict["X"][start:end]
             newDict["X"] = newlist
@@ -232,7 +229,7 @@ def annotateLine(item_name, annotate, delimiter, line, count=None):
 
 def stripQuotes(s):
     "Strips extra quotes"
-    if type(s) != type("string"): s  = str(s)
+    if not isinstance(s, type("string")): s  = str(s)
     if s[0] in ("'", '"'): s = s[1:]
     if s[-1] in ("'", '"'): s = s[:-1]
     return s

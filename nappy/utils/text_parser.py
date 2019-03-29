@@ -41,7 +41,7 @@ def readItemsFromLine(line, nitems=None, rttype=str):
     rtitems = re.split(r"\s+", line.strip())
 
     if nitems and len(rtitems) != nitems:
-        raise Exception("Incorrect number of items (%s) found in line: \n'%s'" % (nitems, line))
+        raise "Incorrect number of items (%s) found in line: \n'%s'" % (nitems, line)
     if rttype is not str:
         rtitems = [rttype(x) for x in rtitems]
     return rtitems
@@ -70,11 +70,11 @@ def readItemsFromUnknownLines(object, nitems, rttype=str):
     rtitems = []
     lines = []        
 
-    if type(object) == type([2,3]): 
+    if isinstance(object, type([2, 3])): 
 
         while len(rtitems) < nitems:   
-	    nextitem = object[0]
-	    object = object[1:]
+            nextitem = object[0]
+            object = object[1:]
             items = rightStripCurlyBraces(nextitem).strip().split()
             lines.append(items)
             (rtitems, extras) = (rtitems + items[:nitems], items[nitems:])
@@ -86,12 +86,12 @@ def readItemsFromUnknownLines(object, nitems, rttype=str):
             (rtitems, extras) = (rtitems + items[:nitems], items[nitems:])
 
     if len(extras) > 0:
-        raise Exception("Could not split " + `len(lines)` + " lines exactly into required number (" + `nitems` + ") of items: \n" + str(lines))
+        raise Exception("Could not split " + repr(len(lines)) + " lines exactly into required number (" + repr(nitems) + ") of items: \n" + str(lines))
 
     if rttype is not str:
         rtitems = [rttype(x) for x in rtitems]
 
-    if type(object) == type([1,2]):
+    if isinstance(object, type([1, 2])):
         return (rtitems, object)
     else:
         return rtitems

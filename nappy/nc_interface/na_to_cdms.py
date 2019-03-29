@@ -90,7 +90,7 @@ class NADictToCdmsObjects:
 
         # Check if we have capability to convert this FFI
         if self.na_file_obj.FFI in (2110, 2160, 2310): 
-	        raise Exception("Cannot convert NASA Ames File Format Index (FFI) " + `self.na_file_obj.FFI` + " to CDMS objects. No mapping implemented yet.")
+	        raise Exception("Cannot convert NASA Ames File Format Index (FFI) " + repr(self.na_file_obj.FFI) + " to CDMS objects. No mapping implemented yet.")
 
         self.output_message = []  # for output displaying message
         self.converted = False
@@ -101,7 +101,7 @@ class NADictToCdmsObjects:
         Returns (variable_list, aux_variable_list, global_attributes_list).
         All these can be readily written to a CDMS File object.
         """
-        if self.converted:
+        if self.converted == True:
             log.info("Already converted to CDMS objects so not re-doing.")
             return (self.cdms_variables, self.cdms_aux_variables, self.global_attributes)
 
@@ -117,7 +117,7 @@ class NADictToCdmsObjects:
         if not hasattr(self, 'cdms_variables'):  self._convertCdmsVariables()
 
         # Then do auxiliary variables
-        if hasattr(self.na_file_obj, "NAUXV") and (type(self.na_file_obj.NAUXV) == type(1) and self.na_file_obj.NAUXV > 0):   # Are there any auxiliary variables?
+        if hasattr(self.na_file_obj, "NAUXV") and (isinstance(self.na_file_obj.NAUXV, type(1)) and self.na_file_obj.NAUXV > 0):   # Are there any auxiliary variables?
             if not hasattr(self, 'cdms_aux_variables'):  
                 self._convertCdmsAuxVariables()
         else:
@@ -134,9 +134,9 @@ class NADictToCdmsObjects:
         """
         glob_atts = dict(self.global_attributes)
         
-        for key in na_to_nc_map.keys():
+        for key in list(na_to_nc_map.keys()):
 
-            if type(key) == type((1,2)):
+            if isinstance(key, type((1, 2))):
 
                 if key == ("SCOM", "NCOM"):
                     # Map special and normal comments into the global comments section
@@ -201,7 +201,7 @@ class NADictToCdmsObjects:
             new_atts.append( (key, glob_atts[key]) )
         used_keys = [i[0] for i in new_atts]
 
-        for key in glob_atts.keys():
+        for key in list(glob_atts.keys()):
             if key not in used_keys:
                 new_atts.append( (key, glob_atts[key]) )
 
@@ -217,11 +217,11 @@ class NADictToCdmsObjects:
             for var_number in range(self.na_file_obj.NV):
                 self.cdms_variables.append(self._convertNAToCdmsVariable(var_number))
         else:
-            if type(self.variables[0]) == type(1) or re.match("\d+", str(self.variables[0])): # They are integers = indices
+            if isinstance(self.variables[0], type(1)) or re.match("\d+", str(self.variables[0])): # They are integers = indices
                 for var_number in self.variables:
                     vn = int(var_number)
                     self.cdms_variables.append(self._convertNAToCdmsVariable(vn))   
-            elif type(self.variables[0]) == type("string"):  # Vars are strings
+            elif isinstance(self.variables[0], type("string")):  # Vars are strings
                 for var_name in self.variables:
                     if var_name in self.na_file_obj.VNAME:
                         var_number = self.na_file_obj.VNAME.index(var_name)
@@ -257,7 +257,7 @@ class NADictToCdmsObjects:
             var.id="naVariable_%s" % (var_number)
         
 	     # Check if mapping provided for renaming this variable
-        if var_name in self.rename_variables.keys():
+        if var_name in list(self.rename_variables.keys()):
             var_name = self.rename_variables[var_name]
 	    
         var.long_name = var.name = var.title = var_name
@@ -276,11 +276,11 @@ class NADictToCdmsObjects:
             for avar_number in range(self.na_file_obj.NAUXV):
                 self.cdms_aux_variables.append(self._convertNAAuxToCdmsVariable(avar_number))
         else:
-            if type(self.aux_variables[0]) == type(1): # They are integers = indices
+            if isinstance(self.aux_variables[0], type(1)): # They are integers = indices
                 for avar_number in self.aux_variables:
                     self.cdms_aux_variables.append(self._convertNAAuxToCdmsVariable(avar_number))   
 
-            elif type(self.aux_variables[0]) == type("string"): # They are strings
+            elif isinstance(self.aux_variables[0], type("string")): # They are strings
                 for avar_name in self.aux_variables:
                     if avar_name in self.na_file_obj.ANAME:
                         avar_number = self.na_file_obj.ANAME.index(avar_name)
@@ -316,7 +316,7 @@ class NADictToCdmsObjects:
             var.id = "naAuxVariable_%s" % (avar_number)
 
 	    # Check if mapping provided for renaming this variable
-        if var_name in self.rename_variables.keys():
+        if var_name in list(self.rename_variables.keys()):
             var_name = self.rename_variables[var_name]
 
         var.long_name = var.name = var.title = var_name
@@ -340,7 +340,7 @@ class NADictToCdmsObjects:
         """
         Creates a cdms axis from a NASA Ames independent variable.
         """
-        if not self.na_file_obj._normalized_X:   self.na_file_obj._normalizeIndVars()
+        if self.na_file_obj._normalized_X == False:   self.na_file_obj._normalizeIndVars()
 
         if self.na_file_obj.NIV == 1:
             array = self.na_file_obj.X
@@ -366,7 +366,7 @@ class NADictToCdmsObjects:
             if re.search(axis_type, var_name, re.IGNORECASE):
                 axis.standard_name = axis.id = axis_type
                 # Designate it CF-style if known axis type (e.g. axis.designateTime() etc..)
-                exec "axis.designate%s()" % axis_type.title()
+                exec("axis.designate%s()" % axis_type.title())
 
         # Check warning for time units pattern
         if axis.isTime() and (not hasattr(axis, "units") or not time_units_pattn.match(axis.units)):
@@ -375,9 +375,9 @@ class NADictToCdmsObjects:
 
                 while time_units_input != "" and not time_units_pattn.match(time_units_input):
                     message = time_units_warning_message			    
-                    if self.time_warning:
+                    if self.time_warning == True:
                         log.debug(message)
-                        time_units_input = raw_input("Please insert your time unit string here (or leave blank):").strip()
+                        time_units_input = input("Please insert your time unit string here (or leave blank):").strip()
                     else: 
                         time_units_input = ""
 

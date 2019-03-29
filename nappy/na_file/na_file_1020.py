@@ -34,7 +34,7 @@ class NAFile1020(nappy.na_file.na_file_1010.NAFile1010):
         self._readCommonHeader()
         self.DX = nappy.utils.text_parser.readItemsFromLine(self.file.readline(), self.NIV, float)
         if self.DX == 0:
-            raise "DX found to be zero (0). Not allowed for FFI 1020."
+            raise ValueError("DX found to be zero (0). Not allowed for FFI 1020.")
 
         self.NVPM = nappy.utils.text_parser.readItemFromLine(self.file.readline(), int)
         self.XNAME = nappy.utils.text_parser.readItemsFromLines(self._readLines(self.NIV), self.NIV, str)
@@ -74,7 +74,7 @@ class NAFile1020(nappy.na_file.na_file_1010.NAFile1010):
         Normalizes the values in the unbounded independent variable for FFIs
         that store an abbreviated version of this axis.
         """
-        if self._normalized_X: return
+        if self._normalized_X == True: return
         newX = []
         for x in self.X[0]:
             for i in range(self.NVPM):

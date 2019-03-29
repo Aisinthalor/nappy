@@ -15,7 +15,7 @@ variables. This class also does sub-sampling by averaging to
 """
 
 # Imports from python standard library
-import os,sys
+import os, sys
 import MA, Numeric, cdms, MV, cdtime
 
 # Imports from local package
@@ -38,7 +38,7 @@ class AircraftData:
         elif args[0]=="ss":
             samplingMethod="selection"
 
-        flagsToUse=[0,1]
+        flagsToUse=[0, 1]
         samplingRate=1
         if len(args)>1:
             samplingRate=int(args[1])
@@ -61,8 +61,8 @@ class AircraftData:
         including the flag values  specified in flagsToUse (defaults are 0 and 1).
         """
         if samplingRate!=1:
-            raise "Sampling rates of values other than 1Hz are not yet supported."
-        maskedArray=self._getMaskedArray(var[:,0](squeeze=1), flagVar[:,0](squeeze=1), flagsToUse)
+            raise NotImplementedError("Sampling rates of values other than 1Hz are not yet supported.")
+        maskedArray=self._getMaskedArray(var[:, 0](squeeze=1), flagVar[:, 0](squeeze=1), flagsToUse)
         # Now re-construct variable axes etc
         newTimeAxis=self._flatten2DTimeAxis(timeVar, samplingRate)
         newVar=self._recreateVariable(var, maskedArray, newTimeAxis, flagVar, max(flagsToUse), missingValue=maskedArray.fill_value(), sampleBy="selection")
@@ -96,7 +96,7 @@ class AircraftData:
                         newArray[t0]=maskedArray.fill_value()
         
                 else:
-                    raise "Averaging for non 1Hz sampling rates not yet supported!"
+                    raise NotImplementedError("Averaging for non 1Hz sampling rates not yet supported!")
 
         # Now re-construct variable axes etc
         newTimeAxis=self._flatten2DTimeAxis(timeVar, samplingRate)
@@ -109,7 +109,7 @@ class AircraftData:
         Returns a flattened 2D time axis.
         """
         if samplingRate!=1:
-            raise "Cannot yet deal with sub-sampling to non 1Hz sampling rates!"
+            raise NotImplementedError("Cannot yet deal with sub-sampling to non 1Hz sampling rates!")
 
         timevalues=timevar._data
         timeunit=timevar.units
@@ -134,12 +134,12 @@ class AircraftData:
         """
         atts=var.attributes
         newAtts={}
-        for att,value in atts.items():
-            if type(value) in (type((1,1)), type([1,2]), type(Numeric.array([1.]))) and len(value)==1:
+        for att, value in list(atts.items()):
+            if type(value) in (type((1, 1)), type([1, 2]), type(Numeric.array([1.]))) and len(value)==1:
                 value=value[0]
-            if type(value) in (type(1), type(1.), type(long(1))):
+            if type(value) in (type(1), type(1.), type(int(1))):
                 newAtts[att]=value
-            elif type(value)==type(""):
+            elif isinstance(value, type("")):
                 newAtts[att]=value.strip()
 
         # Now create the variable
@@ -164,7 +164,7 @@ class AircraftData:
         return newvar
   
 
-    def _getMaskedArray(self, var, flagVar=None, flagValues=(0,1), missingValuesToTest=(-9999., -32767.)):
+    def _getMaskedArray(self, var, flagVar=None, flagValues=(0, 1), missingValuesToTest=(-9999., -32767.)):
         """
         Returns a masked array that has the values only present where the flag
         values are acceptable and the data itself is not missing.
@@ -179,7 +179,7 @@ class AircraftData:
 
         for fv in missingValuesToTest:
             if fv in MV.ravel(var):
-                print "Setting missing value for '%s' as: %s" % (var.id, fv)
+                print(("Setting missing value for '%s' as: %s" % (var.id, fv)))
                 varFillValue=fv
         else:
             varFillValue=missingValuesToTest[0]

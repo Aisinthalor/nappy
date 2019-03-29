@@ -39,7 +39,7 @@ import re
 import getopt
 
 # Import local modules
-from compare import *
+from .compare import *
 
 equality_threshold = 0.01 # i.e. within 1% of each other
 file_exclusion_patterns = (".*CSV.*", ".*svn.*", "\..*", ".*\.pyc$", ".*~$") 
@@ -49,8 +49,8 @@ letter_match = re.compile("[a-zA-Z]")
 
 def exitNicely(msg):
     "Tidy exit."
-    print __doc__
-    print msg
+    print(__doc__)
+    print(msg)
     sys.exit()
 
 
@@ -63,7 +63,7 @@ def compareNA(i1, i2, **kwargs):
     **kwargs are forwarded as dictionary to compNAFiles().
     """
     if os.path.isfile(i1):
-        apply(compNAFiles, (i1, i2), kwargs)
+        compNAFiles(*(i1, i2), **kwargs)
     elif os.path.isdir(i1):
         compDirs(i1, i2)
     else:
@@ -107,7 +107,7 @@ def compareSections(l1, l2, number_clever=True, approx_equal=False,
             else:
                 same = False
         else: 
-            if not number_clever:
+            if number_clever == False:
                 if items1 != items2:
                     same = False
             else:
@@ -135,11 +135,11 @@ def compareSections(l1, l2, number_clever=True, approx_equal=False,
                             same = False
                             break 
               
-        if not same:
+        if same == False:
             all_same = False
-            print "Line %s:" % (i+1)
-            print ">>>", l1[i]
-            print "<<<", l2[i]
+            print(("Line %s:" % (i+1)))
+            print((">>>", l1[i]))
+            print(("<<<", l2[i]))
 
     return all_same
 
@@ -159,7 +159,7 @@ def compNAFiles(f1, f2, header=True, body=True, number_clever=True, approx_equal
     # Ignore anything that is in exclusion list
     for excl in file_exclusions:
         if excl.match(name):
-            print "IGNORING EXCLUDED file:", f1
+            print(("IGNORING EXCLUDED file:", f1))
             return
 
     # Check they exist
@@ -169,12 +169,8 @@ def compNAFiles(f1, f2, header=True, body=True, number_clever=True, approx_equal
     
     # Note delimiter set as None will do split on white-space (which we want!)
 
-    with open(f1) as fh1:
-        l1 = fh1.readlines()
-
-    with open(f2) as fh2:
-        l2 = fh2.readlines()
-
+    l1 = open(f1).readlines()
+    l2 = open(f2).readlines()
     head_len1 = int(l1[0].split(delimiter_1)[0])
     head_len2 = int(l2[0].split(delimiter_2)[0])
 
@@ -184,25 +180,25 @@ def compNAFiles(f1, f2, header=True, body=True, number_clever=True, approx_equal
     body2 = l2[head_len2:]
 
     same = True
-    if header:
-        print "Comparing headers:"
-        print ">>> %s header:" % f1
-        print "<<< %s header:" % f2
+    if header == True:
+        print("Comparing headers:")
+        print((">>> %s header:" % f1))
+        print(("<<< %s header:" % f2))
         same = compareSections(header1, header2, number_clever, approx_equal, delimiter_1, delimiter_2) 
-        if same:
-            print "HEADERS ARE IDENTICAL."
+        if same == True:
+            print("HEADERS ARE IDENTICAL.")
         if len(header1) != len(header2):
-            print "Header lengths differ:\n>>> %s: %s\n<<< %s: %s" % (f1, len(header1), f2, len(header2))
+            print(("Header lengths differ:\n>>> %s: %s\n<<< %s: %s" % (f1, len(header1), f2, len(header2))))
 
-    if body:
-        print "Comparing bodies:"
-        print ">>> %s body:" % f1
-        print "<<< %s body:" % f2
+    if body == True:
+        print("Comparing bodies:")
+        print((">>> %s body:" % f1))
+        print(("<<< %s body:" % f2))
         same = compareSections(body1, body2, number_clever, approx_equal, delimiter_1, delimiter_2)
-        if same:
-            print "BODIES ARE IDENTICAL."
+        if same == True:
+            print("BODIES ARE IDENTICAL.")
         if len(body1) != len(body2):
-            print "Body lengths differ:\n>>> %s: %s\n<<< %s: %s" % (f1, len(body1), f2, len(body2))
+            print(("Body lengths differ:\n>>> %s: %s\n<<< %s: %s" % (f1, len(body1), f2, len(body2))))
        
     return same
 
@@ -242,7 +238,7 @@ def parseArgs(args):
     if len(files) != 2:
         exitNicely("Must provide a minimum of two file names as command line arguments.")
 
-    if not a["header"] and not a["body"]:
+    if a["header"] == False and a["body"] == False:
         exitNicely("Invalid selection: header-only and body-only cannot be selected together.")
 
     return (files, a)
@@ -251,7 +247,7 @@ def parseArgs(args):
 def main(args):
     "Main controller."
     files, arg_dict = parseArgs(args)
-    apply(compareNA, files, arg_dict) 
+    compareNA(*files, **arg_dict) 
    
  
 if __name__=="__main__":

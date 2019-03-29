@@ -1,1 +1,1 @@
-from na_error import *
+from .na_error import *

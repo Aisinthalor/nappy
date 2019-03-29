@@ -30,7 +30,7 @@ class NACore:
                      "NAUXV", "NCOM", "NIV", "NLHEAD", "NNCOML",
                      "NSCOML", "NV", "NVOL", "NVPM", "NX", "NXDEF",
                      "ONAME", "ORG", "RDATE", "SCOM", "SNAME", "V",
-                     "VMISS", "VNAME", "VSCAL", "X", "XNAME", "ignored_header_lines")
+                     "VMISS", "VNAME", "VSCAL", "X", "XNAME")
 
     def __init__(self):
         """
@@ -50,7 +50,7 @@ class NACore:
             dct[key] = getattr(self, key)
 
         self.na_dict={}
-        for i in dct.keys():
+        for i in list(dct.keys()):
             if dct[i] != None:
                 self.na_dict[i] = dct[i]
         return self.na_dict

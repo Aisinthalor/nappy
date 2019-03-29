@@ -7,7 +7,7 @@ Parses config file for nappy.
 """
 
 # Standard library imports
-import ConfigParser
+import configparser
 import os
 
 
@@ -22,7 +22,7 @@ config_dict = None
 annotations_config_dict = None
 attributes_config_dict = None
 
-class MyCasePreservingConfigParser(ConfigParser.ConfigParser):
+class MyCasePreservingConfigParser(configparser.ConfigParser):
     optionxform = str
 
 def makeConfigDict(cf=config_file):
@@ -125,7 +125,7 @@ def getLocalAttributesConfigDict():
 
 if __name__=="__main__":
 
-    print getConfigDict()
-    print getAnnotationsConfigDict()
-    print getLocalAttributesConfigDict()
+    print((getConfigDict()))
+    print((getAnnotationsConfigDict()))
+    print((getLocalAttributesConfigDict()))
 

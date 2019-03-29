@@ -68,7 +68,7 @@ class NAContentCollector(nappy.na_file.na_core.NACore):
         Typical usage:
         >>> x = NAContentCollector(["temp", "precip"])
         >>> x.collectNAContent()
-        >>> if x.found_na:
+        >>> if x.found_na == True:
         ...     print x.na_dict, x.var_ids, x.unused_vars 
         """
         self.output_message = []
@@ -194,7 +194,7 @@ class NAContentCollector(nappy.na_file.na_core.NACore):
 
                 first_axis = var.getAxis(0)
                 # Check if axis is identical to first axis of main best variable, if so, can be auxiliary var
-                if not cdms_utils.axis_utils.areAxesIdentical(best_var_axes[0], first_axis):
+                if cdms_utils.axis_utils.areAxesIdentical(best_var_axes[0], first_axis) == False: 
 
                     # If not identical, then it might still qualify as an auxiliary every n time points - valid for 1020
                     if len(var.shape) == 1:
@@ -222,7 +222,7 @@ class NAContentCollector(nappy.na_file.na_core.NACore):
 
                 # Loop through dimensions
                 for i in range(number_of_dims):            
-                    if not cdms_utils.axis_utils.areAxesIdentical(best_var_axes[i], this_var_axes[i]):
+                    if cdms_utils.axis_utils.areAxesIdentical(best_var_axes[i], this_var_axes[i]) == False:
                         self.unused_vars.append(var)
                         break
                 else:
@@ -258,7 +258,7 @@ class NAContentCollector(nappy.na_file.na_core.NACore):
         # Remake vars_for_na now in new order and clean out any that are "None"
         vars_for_na = []
         for var in ordered_vars:
-            if type(var) != type(None): 
+            if not isinstance(var, type(None)): 
                 vars_for_na.append(var)
 
         vars_for_na = vars_for_na + other_vars
@@ -276,7 +276,7 @@ class NAContentCollector(nappy.na_file.na_core.NACore):
         # Remake aux_vars_for_na now in order
         aux_vars_for_na = []
         for var in ordered_aux_vars:
-            if type(var) != type(None): 
+            if not isinstance(var, type(None)): 
                 aux_vars_for_na.append(var)
 
         aux_vars_for_na = aux_vars_for_na + other_aux_vars
@@ -309,7 +309,7 @@ class NAContentCollector(nappy.na_file.na_core.NACore):
             else:
                 ffi = 2010
         else:
-            if len(aux_vars_for_na) > 0 or (self.na_dict.has_key("NAUXV") and self.na_dict["NAUXV"] > 0):
+            if len(aux_vars_for_na) > 0 or ("NAUXV" in self.na_dict and self.na_dict["NAUXV"] > 0):
                 ffi = 1010
             else:
                 ffi = 1001
@@ -335,7 +335,7 @@ class NAContentCollector(nappy.na_file.na_core.NACore):
             self.na_dict["VNAME"].append(name)
             miss = cdms_utils.var_utils.getMissingValue(var)
 
-            if type(miss) not in (type(1.2), type(1), type(1L)):  
+            if type(miss) not in (type(1.2), type(1), type(1)):  
                 miss = miss[0]
 
             self.na_dict["VMISS"].append(miss)
@@ -346,7 +346,7 @@ class NAContentCollector(nappy.na_file.na_core.NACore):
             self.na_dict["V"].append(self._getFilledArrayAsList(var, miss))
 
             # Create independent variable info
-            if not self.na_dict.has_key("X"):
+            if "X" not in self.na_dict:
                 # Set up lists ready to populate with values
                 self.na_dict["NXDEF"] = []
                 self.na_dict["NX"] = []
@@ -445,14 +445,14 @@ class NAContentCollector(nappy.na_file.na_core.NACore):
         # Initialise aux var itesms as empty lists unless already defined when
         # setting up independent variables
         for item in ("ANAME", "AMISS", "ASCAL", "A"):
-            if not self.na_dict.has_key(item):
+            if item not in self.na_dict:
                 self.na_dict[item] = [] 
 
         for var in aux_vars:
             name = cdms_utils.var_utils.getBestName(var)
             self.na_dict["ANAME"].append(name)
             miss = cdms_utils.var_utils.getMissingValue(var)
-            if type(miss) not in (type(1.1), type(1), type(1L)):  miss = miss[0]
+            if type(miss) not in (type(1.1), type(1), type(1)):  miss = miss[0]
             self.na_dict["AMISS"].append(miss)
             self.na_dict["ASCAL"].append(1)
             # Populate the variable list with the array
@@ -500,20 +500,20 @@ class NAContentCollector(nappy.na_file.na_core.NACore):
         local_attributes = nappy.utils.getLocalAttributesConfigDict()
         local_nc_atts = local_attributes["nc_attributes"]
          
-        for att, value in local_nc_atts.items():
-            if not nc_to_na_map.has_key(att):
+        for att, value in list(local_nc_atts.items()):
+            if att not in nc_to_na_map:
                 nc_to_na_map[key] = value
 
-        self.extra_comments = [[],[],[]]  # Normal comments, special comments, other comments
+        self.extra_comments = [[], [], []]  # Normal comments, special comments, other comments
         convention_or_reference_comments = []
 
-        for key in self.globals.keys():
+        for key in list(self.globals.keys()):
             if key != "first_valid_date_of_data" and type(self.globals[key]) \
                                        not in (type("s"), type(1.1), type(1)):
                 continue
 
             # Loop through keys of header/comment items to map
-            if key in nc_to_na_map.keys():
+            if key in list(nc_to_na_map.keys()):
                 if key == "history":
                     time_string = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(time.time()))
                     history = "History:  %s - Converted to NASA Ames format using nappy-%s.\n  %s" % \
@@ -640,7 +640,7 @@ class NAContentCollector(nappy.na_file.na_core.NACore):
         for var in self.rank_zero_vars:
             rank_zero_vars_string.append("  Variable %s: %s" % (var.id, cdms_utils.var_utils.getBestName(var)))
 
-            for att in var.attributes.keys():
+            for att in list(var.attributes.keys()):
                 value = var.attributes[att]
 
                 if type(value) in (type("s"), type(1.0), type(1)):
@@ -657,7 +657,7 @@ class NAContentCollector(nappy.na_file.na_core.NACore):
 
             name = cdms_utils.var_utils.getBestName(var)
 
-            for scom,value in var.attributes.items():
+            for scom, value in list(var.attributes.items()):
                 if type(value) in (type([]), type(N.array([0]))) and len(value) == 1:
                     value = value[0]
 
@@ -673,7 +673,7 @@ class NAContentCollector(nappy.na_file.na_core.NACore):
                         varflag = "using" 
                         spec_comm_flag = 1
 
-                    if not var_name_written:
+                    if var_name_written == False:
                         SCOM.append("  Variable %s: %s" % (var.id, name))
                         var_name_written = True
 
@@ -725,7 +725,7 @@ class NAContentCollector(nappy.na_file.na_core.NACore):
         # Check if DATE field previously known in NASA Ames file
         time_now = [int(i) for i in time.strftime("%Y %m %d", time.localtime(time.time())).split()]
 
-        if not self.na_dict.has_key("RDATE"):
+        if "RDATE" not in self.na_dict:
             self.na_dict["RDATE"] = time_now
 
         if self.ax0.isTime():
@@ -741,7 +741,7 @@ class NAContentCollector(nappy.na_file.na_core.NACore):
                 self.output_message.append(msg)
                 self.na_dict["DATE"] = [999] * 3 
         else: 
-            if not self.na_dict.has_key("DATE"):
+            if "DATE" not in self.na_dict:
                 msg = warning_message
                 log.info(msg)
                 self.output_message.append(msg)
@@ -751,7 +751,7 @@ class NAContentCollector(nappy.na_file.na_core.NACore):
 
         self.na_dict["IVOL"] = 1
         self.na_dict["NVOL"] = 1
-        for key in header_items.keys():
+        for key in list(header_items.keys()):
              self.na_dict[key] = header_items[key]
 
 

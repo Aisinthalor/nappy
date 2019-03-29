@@ -36,7 +36,7 @@ class NAToNC(nappy.nc_interface.na_to_cdms.NADictToCdmsObjects):
     """
     
     def __init__(self, na_file, variables=None, aux_variables=None,
-                 global_attributes=[("Conventions","CF-1.0")],
+                 global_attributes=[("Conventions", "CF-1.0")],
                  time_units=None, time_warning=True, 
                  rename_variables={}):
         """
@@ -50,7 +50,7 @@ class NAToNC(nappy.nc_interface.na_to_cdms.NADictToCdmsObjects):
         """
         # First open na_file if it is a file rather than an na_file object
         na_file_obj = na_file
-        if type(na_file_obj) == type("string"):
+        if isinstance(na_file_obj, type("string")):
             na_file_obj = nappy.openNAFile(na_file_obj)
 
         nappy.nc_interface.na_to_cdms.NADictToCdmsObjects.__init__(self, na_file_obj, variables=variables, 

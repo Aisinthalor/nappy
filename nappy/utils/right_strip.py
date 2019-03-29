@@ -49,7 +49,7 @@ Uwind (m/s)         {Absolute value of wind velocity}
 1                                      {NNCOML}""".split("\n")
 
     for line in test_lines:
-        print "INPUT:  %s" % line
-        print "OUTPUT: %s" % rightStripCurlyBraces(line)
+        print(("INPUT:  %s" % line))
+        print(("OUTPUT: %s" % rightStripCurlyBraces(line)))
 
 

@@ -17,7 +17,7 @@ for individual FFIs. Each FFI class is held in an individual file.
 import sys
 import time
 import re
-import StringIO
+import io
 
 # Imports from nappy package
 import nappy.na_file.na_core
@@ -54,7 +54,7 @@ class NAFile(nappy.na_file.na_core.NACore):
     the user forgets to close it.
     """
 
-    def __init__(self, filename, ignore_header_lines=0, mode="r", na_dict={}): 
+    def __init__(self, filename, mode="r", na_dict={}): 
         """
         Initialization of class, decides if user wishes to read or write
         NASA Ames file.
@@ -63,8 +63,6 @@ class NAFile(nappy.na_file.na_core.NACore):
         self.filename = filename
         self._open(mode)
         self.mode = mode
-        self.ignore_header_lines = ignore_header_lines
-        self.ignored_header_lines = []
         self.na_dict = na_dict
 
         if self.mode == "r":
@@ -99,17 +97,17 @@ class NAFile(nappy.na_file.na_core.NACore):
         if self.mode != "w":
             raise Exception("WARNING: Cannot write to read-only file. Can only write to NA file object when mode='w'.")
 
-        if self.data_written:
+        if self.data_written == True:
             raise Exception("WARNING: Cannot write multiple NASA Ames dictionaries to a single file. Please open a new NASA Ames file instance to write new data to.")
 
-        if not self.is_open:
+        if self.is_open == False:
             raise Exception("WARNING: NASA Ames file instance is closed and cannot be written to.")
    
         # Parse na_dict then write header and data
         self._parseDictionary()
-        self.header = StringIO.StringIO()
+        self.header = io.StringIO()
 
-        if not no_header:
+        if no_header == False:
             self.writeHeader()
 
         self.writeData()
@@ -129,7 +127,7 @@ class NAFile(nappy.na_file.na_core.NACore):
         of NASA Ames internal variables. These are saved as instance attributes
         with the name used in the NASA Ames documentation.
         """
-        for i in self.na_dict.keys():
+        for i in list(self.na_dict.keys()):
             setattr(self, i, self.na_dict[i])
 
     def _readTopLine(self):
@@ -165,7 +163,7 @@ class NAFile(nappy.na_file.na_core.NACore):
                 empties = 1
             else:
                 if empties == 1:   # If data line found after empty line then raise
-                    raise Exception("Empty line found in data section at line: " + `count`)
+                    raise Exception("Empty line found in data section at line: " + repr(count))
                 else:
                     rtlines.append(line)
             count = count + 1
@@ -291,7 +289,7 @@ class NAFile(nappy.na_file.na_core.NACore):
         lines = self.header.readlines()
         headlength = len(lines)
         lines[0] = wrapLine("NLHEAD_FFI", self.annotation, self.delimiter, "%d%s%d\n" % (headlength, self.delimiter, self.FFI))
-        self.header = StringIO.StringIO("".join(lines))
+        self.header = io.StringIO("".join(lines))
         self.header.seek(0) 
 
     def _readSpecialComments(self):
@@ -321,10 +319,7 @@ class NAFile(nappy.na_file.na_core.NACore):
         This method can be called directly by the user.
         """
         self._setupArrays()
-
-        with open(self.filename) as fh:
-            datalines = fh.readlines()[self.NLHEAD:]
-
+        datalines = open(self.filename).readlines()[self.NLHEAD:]
         datalines = self._checkForBlankLines(datalines)
 
         # Set up loop over unbounded indpendent variable
@@ -333,4 +328,4 @@ class NAFile(nappy.na_file.na_core.NACore):
             datalines = self._readData1(datalines, m)
             datalines = self._readData2(datalines, m)
             m = m + 1
-
+            
