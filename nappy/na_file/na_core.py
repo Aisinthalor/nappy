@@ -24,7 +24,8 @@ class NACore:
     class is sub-classed by all NAFile classes.
     """
     
-    var_and_units_pattern = re.compile("^\s*(.*)\((.+?)\)(.*)\s*$")
+    var_and_units_pattern2 = re.compile("^\s*(.*)\[(.+?)\](.*)\s*$")
+    var_and_units_pattern1 = re.compile("^\s*(.*)\((.+?)\)(.*)\s*$")
     na_dictionary_keys = ("A", "AMISS", "ANAME", "ASCAL", "DATE", "DX",
                      "FFI", "IVOL", "LENA", "LENX", "MNAME", "NAUXC",
                      "NAUXV", "NCOM", "NIV", "NLHEAD", "NNCOML",
@@ -81,10 +82,14 @@ class NACore:
         If it can match variable name and units from the name it does and returns
         (var_name, units). Otherwise returns (item, None).
         """
-        match = NACore.var_and_units_pattern.match(item)
+        match1 = NACore.var_and_units_pattern1.match(item) 
+        match2 = NACore.var_and_units_pattern2.match(item)
 
-        if match:
-            (v1, units, v2) = match.groups()
+        if match2: # case for [unit]
+            (v1, units, v2) = match2.groups()
+            var_name = v1 + " " + v2
+        elif match1: # case for (unit)
+            (v1, units, v2) = match1.groups()
             var_name = v1 + " " + v2
         else:
             (var_name, units) = (item, None)   
